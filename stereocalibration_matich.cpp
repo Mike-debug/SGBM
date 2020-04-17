@@ -38,7 +38,7 @@ int Stereo_Match(void)
 
     int alg = STEREO_SGBM;
     
-    int numberOfDisparities = 32;
+    int numberOfDisparities = 96;
     bool no_display = false;
     float scale = 1;
 
@@ -132,21 +132,35 @@ int Stereo_Match(void)
     //}
     //
 
-    numberOfDisparities = ((img_size.width / 8) + 15) & -16;
-    Ptr<StereoSGBM> sgbm = StereoSGBM::create(0, 16, 3);//全局的SGBM;
-    sgbm->setPreFilterCap(32);
-    int SADWindowSize = 9;
-    int sgbmWinSize = SADWindowSize > 0 ? SADWindowSize : 3;
-    sgbm->setBlockSize(sgbmWinSize);
-    int cn = img1.channels();
-    sgbm->setP1(8 * cn * sgbmWinSize * sgbmWinSize);
-    sgbm->setP2(32 * cn * sgbmWinSize * sgbmWinSize);
-    sgbm->setMinDisparity(0);
-    sgbm->setNumDisparities(numberOfDisparities);
+    int windowsize = 3;
+    int min_disp = 16;
+    int num_disp = 112 - min_disp;
+    //Ptr<StereoSGBM> sgbm = StereoSGBM::create(0, 16, 3);//全局的SGBM;
+    Ptr<StereoSGBM> sgbm = StereoSGBM::create(num_disp, 21);//全局的SGBM;
+    sgbm->setMinDisparity(min_disp);
+    sgbm->setNumDisparities(num_disp);
+    sgbm->setBlockSize(16);
+    sgbm->setP1(8 * 3 * windowsize * windowsize);
+    sgbm->setP2(32 * 3 * windowsize * windowsize);
+    sgbm->setDisp12MaxDiff(1);
     sgbm->setUniquenessRatio(10);
     sgbm->setSpeckleWindowSize(100);
     sgbm->setSpeckleRange(32);
-    sgbm->setDisp12MaxDiff(1);
+
+    numberOfDisparities = ((img_size.width / 8) + 15) & -16;
+    sgbm->setPreFilterCap(32);
+    int SADWindowSize = 9;
+    int sgbmWinSize = SADWindowSize > 0 ? SADWindowSize : 3;
+    //sgbm->setBlockSize(sgbmWinSize);
+    int cn = img1.channels();
+    //sgbm->setP1(8 * cn * sgbmWinSize * sgbmWinSize);
+    //sgbm->setP2(32 * cn * sgbmWinSize * sgbmWinSize);
+    //sgbm->setMinDisparity(0);
+    //sgbm->setNumDisparities(numberOfDisparities);
+    //sgbm->setUniquenessRatio(10);
+    //sgbm->setSpeckleWindowSize(100);
+    //sgbm->setSpeckleRange(32);
+    //sgbm->setDisp12MaxDiff(1);
     
     /*if (alg == STEREO_HH)
         sgbm->setMode(StereoSGBM::MODE_HH);
@@ -742,7 +756,7 @@ int main(int argc, char** argv)
     bool useCalibrated = true;
     bool showRectified = true;
  
-    StereoCalib(imagelist, boardSize, squareSize, true, cornersfound, true, showRectified, rectified);
+    //StereoCalib(imagelist, boardSize, squareSize, true, cornersfound, true, showRectified, rectified);
     Stereo_Match();
     return 0;
 }
